@@ -106,7 +106,7 @@ public class BustedRunner extends ParentRunner<BustedRunner.BustedIt> {
 	}
 
 	@Override
-	protected void runChild(BustedIt child, RunNotifier notifier) {
+	protected void runChild(final BustedIt child, RunNotifier notifier) {
 		Statement statement = new Statement() {
 			@Override
 			public void evaluate() {
@@ -126,7 +126,6 @@ public class BustedRunner extends ParentRunner<BustedRunner.BustedIt> {
 			this.text = text;
 			this.closure = closure;
 			description = Description.createTestDescription(getTestClass().getJavaClass(), text);
-			;
 		}
 	}
 

@@ -17,5 +17,4 @@ public class BustedRunnerTest {
 			"BustedTest.lua"
 		};
 	}
-
 }
