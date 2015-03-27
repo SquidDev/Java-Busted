@@ -44,8 +44,8 @@ public class TestGroup extends TestItemRunner<ITestItem> implements ITestItem {
 		LuaTable newEnv = new LuaTable();
 		newEnv.setmetatable(envMeta);
 
-		BustedVariables bustedVars = new BustedVariables(runner);
-		bustedVars.bind(newEnv);
+		BustedContext bustedVars = new BustedContext(runner);
+		bustedVars.bindEnvironment(newEnv);
 
 		closure.setfenv(newEnv);
 		closure.invoke();

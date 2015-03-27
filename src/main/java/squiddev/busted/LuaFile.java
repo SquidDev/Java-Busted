@@ -24,7 +24,7 @@ public class LuaFile extends TestItemRunner<ITestItem> implements ITestItem {
 	 */
 	@Override
 	protected List<ITestItem> getChildren() {
-		BustedVariables globals = new BustedVariables(runner);
+		BustedContext globals = new BustedContext(runner);
 
 		try {
 			runner.runFile.invoke(null, runner.bustedRoot + path, globals);

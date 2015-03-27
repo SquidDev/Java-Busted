@@ -34,7 +34,7 @@ public class BustedRunner extends TestItemRunner<LuaFile> {
 	/**
 	 * A method that takes two arguments:
 	 * {@link String} would be the file path
-	 * {@link BustedVariables} being additional globals to use
+	 * {@link BustedContext} being additional globals to use
 	 */
 	@Retention(RetentionPolicy.RUNTIME)
 	@Target(ElementType.METHOD)
@@ -75,7 +75,7 @@ public class BustedRunner extends TestItemRunner<LuaFile> {
 
 				// If we have no methods then we can just return the default
 				if (methods.size() == 0) {
-					runFile = BustedRunner.class.getDeclaredMethod("runFile", String.class, BustedVariables.class);
+					runFile = BustedRunner.class.getDeclaredMethod("runFile", String.class, BustedContext.class);
 				} else {
 
 					// If we have more than one than that is a programmer error
@@ -93,7 +93,7 @@ public class BustedRunner extends TestItemRunner<LuaFile> {
 
 					// Needs to accept (String, BustedGlobals)
 					Class<?>[] params = method.getParameterTypes();
-					if (params.length != 2 || !params[0].equals(String.class) || !params[1].equals(BustedVariables.class)) {
+					if (params.length != 2 || !params[0].equals(String.class) || !params[1].equals(BustedContext.class)) {
 						throw new IllegalArgumentException("@RunFile method must accept be in the form (String, BustedGlobals)");
 					}
 
@@ -125,9 +125,9 @@ public class BustedRunner extends TestItemRunner<LuaFile> {
 	 * @param busted The busted globals to use
 	 * @throws Exception
 	 */
-	protected static void runFile(String file, BustedVariables busted) throws Exception {
+	protected static void runFile(String file, BustedContext busted) throws Exception {
 		LuaValue globals = JsePlatform.debugGlobals();
-		busted.bind(globals);
+		busted.bindEnvironment(globals);
 		LoadState.load(BustedRunner.class.getResourceAsStream(file), file, globals).invoke();
 	}
 }
