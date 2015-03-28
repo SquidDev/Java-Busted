@@ -1,6 +1,7 @@
 package squiddev.busted;
 
 import org.junit.runners.model.InitializationError;
+import org.luaj.vm2.LuaValue;
 
 import java.util.List;
 
@@ -24,7 +25,7 @@ public class LuaFile extends TestItemRunner<ITestItem> implements ITestItem {
 	 */
 	@Override
 	protected List<ITestItem> getChildren() {
-		BustedContext globals = new BustedContext(runner);
+		Globals globals = new Globals(runner);
 
 		try {
 			runner.runFile.invoke(null, runner.bustedRoot + path, globals);
@@ -43,5 +44,35 @@ public class LuaFile extends TestItemRunner<ITestItem> implements ITestItem {
 	protected String getName() {
 		// We need to replace the "." as they are read as name separators
 		return path.replace(".lua", "").replace(".", "-");
+	}
+
+	public static class Globals extends BustedContext {
+		public LuaValue environment;
+
+		public Globals(BustedRunner runner) {
+			super(runner);
+		}
+
+		/**
+		 * Get the environment for this context
+		 *
+		 * @return The environment for this context
+		 */
+		@Override
+		public LuaValue getEnv() {
+			if(environment == null) throw new IllegalStateException("Must set environment before getting it");
+			return environment;
+		}
+
+		/**
+		 * Set the environment for this context
+		 * @param environment The environment to use
+		 */
+		public void setEnv(LuaValue environment) {
+			if(this.environment != null) throw new IllegalStateException("Cannot set environment again");
+			this.environment = environment;
+
+			runner.busted.bind(this);
+		}
 	}
 }

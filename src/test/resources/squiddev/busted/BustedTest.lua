@@ -7,3 +7,7 @@ define("Another group", function()
         print("Hai!")
     end)
 end)
+
+pending("Pending test", function()
+	error("This should not be called")
+end)

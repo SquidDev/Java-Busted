@@ -1,10 +1,10 @@
 package squiddev.busted;
 
-import org.junit.runners.model.InitializationError;
+import org.luaj.vm2.LuaError;
 import org.luaj.vm2.LuaTable;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.lib.ThreeArgFunction;
-import org.luaj.vm2.lib.TwoArgFunction;
+import org.luaj.vm2.lib.ZeroArgFunction;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,33 +14,53 @@ import java.util.List;
  */
 public class BustedContext {
 	public enum EnvironmentType {
-		None,
+		/**
+		 * Use parent environment
+		 */
+		Parent,
+
+		/**
+		 * Clone the global table
+		 */
 		Isolate,
+
+		/**
+		 * Store variables in the table above
+		 */
 		Unwrap,
+
+		/**
+		 * Use the parent environment via metatables
+		 */
+		Wrap,
+
+		/**
+		 * Store variables in the table 2 above
+		 */
 		Expose,
 	}
 
 	public final BustedRunner runner;
 	public final BustedContext parent;
 	public final EnvironmentType type;
+	public final int depth;
 
 	protected final List<ITestItem> tests = new ArrayList<>();
 
-	private LuaValue env = new LuaTable();
+	private LuaValue env;
 
-	public BustedContext(BustedRunner runner, BustedContext parent, EnvironmentType type) {
-		this.runner = runner;
+	public BustedContext(BustedContext parent, EnvironmentType type) {
+		this.runner = parent.runner;
 		this.parent = parent;
 		this.type = type;
+		depth = parent.depth + 1;
 	}
 
 	public BustedContext(BustedRunner runner) {
-		this(runner, null, EnvironmentType.None);
-	}
-
-	public void bindEnvironment(LuaValue value) {
-		value.set("define", new BustedDefineFunction());
-		value.set("it", new BustedItFunction());
+		this.runner = runner;
+		this.parent = this;
+		this.type = EnvironmentType.Parent;
+		depth = 0;
 	}
 
 	/**
@@ -53,7 +73,6 @@ public class BustedContext {
 		BustedContext parent = this;
 		for (int i = 0; i < levels; i++) {
 			parent = parent.parent;
-			if (parent == null) break;
 		}
 
 		final BustedContext p = parent;
@@ -62,15 +81,11 @@ public class BustedContext {
 		metaEnv.set("__newindex", new ThreeArgFunction() {
 			@Override
 			public LuaValue call(LuaValue self, LuaValue key, LuaValue value) {
-				if (p == null) {
-					self.get("_G").set(key, value);
-				} else {
-					p.getEnv().set(key, value);
-				}
-
+				(p.getEnv()).set(key, value);
 				return LuaValue.NIL;
 			}
 		});
+		metaEnv.set("__index", this.parent.getEnv());
 
 		LuaTable env = new LuaTable();
 		env.setmetatable(metaEnv);
@@ -85,38 +100,59 @@ public class BustedContext {
 	public LuaValue getEnv() {
 		if (env == null) {
 			switch (type) {
-				case None:
-					return env = parent.env;
+				case Wrap: {
+					LuaTable env = new LuaTable();
+					LuaTable metaEnv = new LuaTable();
+					metaEnv.set("__index", parent.getEnv());
+					env.setmetatable(metaEnv);
+					return this.env = env;
+				}
 				case Isolate:
-					return new LuaTable();
+					// TODO: Clone global table
+					return parent.getEnv().get("_G");
 				case Unwrap:
 					return env = unwrap(1);
 				case Expose:
 					return env = unwrap(2);
+				case Parent:
+					if (parent == this) throw new IllegalStateException("This item has no parent");
+					return env = parent.env;
 			}
 		}
 
 		return env;
 	}
 
-	private class BustedDefineFunction extends TwoArgFunction {
-		@Override
-		public LuaValue call(LuaValue name, LuaValue closure) {
-			try {
-				tests.add(new TestGroup(name.checkjstring(), closure.checkfunction(), runner));
-			} catch (InitializationError e) {
-				throw new RuntimeException(e);
-			}
-			return LuaValue.NONE;
+	/**
+	 * Bind the busted environment to this
+	 */
+	public void setup() {
+		runner.busted.bind(this);
+	}
+
+	/**
+	 * Disable a function in this environment
+	 *
+	 * @param descriptor The name of the function to use
+	 */
+	public void reject(final String descriptor) {
+		LuaValue env = getEnv();
+		if (!env.get(descriptor).isnil()) {
+			env.set("descriptor", new ZeroArgFunction() {
+				@Override
+				public LuaValue call() {
+					throw new LuaError("'" + descriptor + "' not supported inside current block");
+				}
+			});
 		}
 	}
 
-	private class BustedItFunction extends TwoArgFunction {
-
-		@Override
-		public LuaValue call(LuaValue name, LuaValue closure) {
-			tests.add(new Test(name.checkjstring(), closure.checkfunction(), runner));
-			return LuaValue.NONE;
+	/**
+	 * Disable all busted functions
+	 */
+	public void rejectAll() {
+		for (String descriptor : runner.busted.executors.keySet()) {
+			reject(descriptor);
 		}
 	}
 }

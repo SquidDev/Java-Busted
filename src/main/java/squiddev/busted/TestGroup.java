@@ -1,7 +1,6 @@
 package squiddev.busted;
 
 import org.junit.runners.model.InitializationError;
-import org.luaj.vm2.LuaTable;
 import org.luaj.vm2.LuaValue;
 
 import java.util.List;
@@ -12,45 +11,40 @@ import java.util.List;
 public class TestGroup extends TestItemRunner<ITestItem> implements ITestItem {
 	private final String name;
 	private final LuaValue closure;
-	private final BustedRunner runner;
+	private final BustedContext context;
 
 	/**
-	 * @param name   The name of the test
-	 * @param runner The owning {@link BustedRunner}
+	 * Create a new TestGroup
+	 *
+	 * @param name    The name of the group
+	 * @param closure The closure that provides its children
+	 * @param context The current context
 	 * @throws InitializationError
 	 */
-	protected TestGroup(String name, LuaValue closure, BustedRunner runner) throws InitializationError {
+	protected TestGroup(String name, LuaValue closure, BustedContext context) throws InitializationError {
 		// TODO: Cache the TestClass instance somehow
-		super(runner.getTestClass().getJavaClass());
+		super(context.runner.getTestClass().getJavaClass());
 
 		this.name = name;
 		this.closure = closure;
-		this.runner = runner;
+		this.context = context;
+
+		context.setup();
+		closure.setfenv(context.getEnv());
+
+		context.parent.tests.add(this);
 	}
 
 	/**
 	 * Returns a list of objects that define the children of this Runner.
-	 * <p>
+	 * <p/>
 	 * This creates a new environment which references the parent one
 	 * to enable us to define child tests
 	 */
 	@Override
 	protected List<ITestItem> getChildren() {
-		LuaValue env = closure.getfenv();
-
-		LuaTable envMeta = new LuaTable(0, 1);
-		envMeta.set("__index", env);
-
-		LuaTable newEnv = new LuaTable();
-		newEnv.setmetatable(envMeta);
-
-		BustedContext bustedVars = new BustedContext(runner);
-		bustedVars.bindEnvironment(newEnv);
-
-		closure.setfenv(newEnv);
 		closure.invoke();
-
-		return bustedVars.tests;
+		return context.tests;
 	}
 
 	/**

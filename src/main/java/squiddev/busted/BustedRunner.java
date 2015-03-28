@@ -45,6 +45,8 @@ public class BustedRunner extends TestItemRunner<LuaFile> {
 	public final String[] bustedSources;
 	public final Method runFile;
 
+	public final Busted busted = new Busted();
+
 	/**
 	 * Constructs a new {@code BustedRunner} that will run {@code @TestClass}
 	 */
@@ -75,7 +77,7 @@ public class BustedRunner extends TestItemRunner<LuaFile> {
 
 				// If we have no methods then we can just return the default
 				if (methods.size() == 0) {
-					runFile = BustedRunner.class.getDeclaredMethod("runFile", String.class, BustedContext.class);
+					runFile = BustedRunner.class.getDeclaredMethod("runFile", String.class, LuaFile.Globals.class);
 				} else {
 
 					// If we have more than one than that is a programmer error
@@ -93,8 +95,8 @@ public class BustedRunner extends TestItemRunner<LuaFile> {
 
 					// Needs to accept (String, BustedGlobals)
 					Class<?>[] params = method.getParameterTypes();
-					if (params.length != 2 || !params[0].equals(String.class) || !params[1].equals(BustedContext.class)) {
-						throw new IllegalArgumentException("@RunFile method must accept be in the form (String, BustedGlobals)");
+					if (params.length != 2 || !params[0].equals(String.class) || !params[1].equals(LuaFile.Globals.class)) {
+						throw new IllegalArgumentException("@RunFile method must accept be in the form (String, LuaFile.GlobalContext)");
 					}
 
 					runFile = method;
@@ -122,12 +124,12 @@ public class BustedRunner extends TestItemRunner<LuaFile> {
 	 * Default RunFile method
 	 *
 	 * @param file   The path of the file to run
-	 * @param busted The busted globals to use
+	 * @param context The busted globals to use
 	 * @throws Exception
 	 */
-	protected static void runFile(String file, BustedContext busted) throws Exception {
+	protected static void runFile(String file, LuaFile.Globals context) throws Exception {
 		LuaValue globals = JsePlatform.debugGlobals();
-		busted.bindEnvironment(globals);
+		context.setEnv(globals);
 		LoadState.load(BustedRunner.class.getResourceAsStream(file), file, globals).invoke();
 	}
 }
