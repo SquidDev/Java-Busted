@@ -7,7 +7,7 @@ public class BustedRunnerTest {
 	@BustedRunner.Sources(root = "/squiddev/busted/")
 	public static String[] sources() {
 		return new String[]{
-			"BustedTest.lua"
+			"BustedTest.lua",
 		};
 	}
 }

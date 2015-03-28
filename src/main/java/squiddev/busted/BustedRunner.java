@@ -41,6 +41,14 @@ public class BustedRunner extends TestItemRunner<LuaFile> {
 	public @interface RunFile {
 	}
 
+	/**
+	 * A method that takes {@link Busted} as an argument to register custom globals
+	 */
+	@Retention(RetentionPolicy.RUNTIME)
+	@Target(ElementType.METHOD)
+	public @interface SetupBusted {
+	}
+
 	public final String bustedRoot;
 	public final String[] bustedSources;
 	public final Method runFile;
@@ -96,10 +104,28 @@ public class BustedRunner extends TestItemRunner<LuaFile> {
 					// Needs to accept (String, BustedGlobals)
 					Class<?>[] params = method.getParameterTypes();
 					if (params.length != 2 || !params[0].equals(String.class) || !params[1].equals(LuaFile.Globals.class)) {
-						throw new IllegalArgumentException("@RunFile method must accept be in the form (String, LuaFile.GlobalContext)");
+						throw new IllegalArgumentException("@RunFile method must accept be in the form (String, LuaFile.Globals)");
 					}
 
 					runFile = method;
+				}
+			}
+
+			{
+				for (FrameworkMethod m : getTestClass().getAnnotatedMethods(SetupBusted.class)) {
+					// Should be a public static method
+					if (!m.isStatic() || !m.isPublic()) {
+						throw new IllegalArgumentException("@SetupBusted method must be public static");
+					}
+					Method method = m.getMethod();
+
+					// Needs to accept (String, BustedGlobals)
+					Class<?>[] params = method.getParameterTypes();
+					if (params.length != 1 || !params[0].equals(String.class) || !params[1].equals(LuaFile.Globals.class)) {
+						throw new IllegalArgumentException("@SetupBusted method must accept be in the form (Busted)");
+					}
+
+					method.invoke(null, busted);
 				}
 			}
 		} catch (Exception e) {
@@ -123,7 +149,7 @@ public class BustedRunner extends TestItemRunner<LuaFile> {
 	/**
 	 * Default RunFile method
 	 *
-	 * @param file   The path of the file to run
+	 * @param file    The path of the file to run
 	 * @param context The busted globals to use
 	 * @throws Exception
 	 */

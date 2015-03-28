@@ -18,14 +18,20 @@ public class Test {
 }
 ```
 
-You can also specify a custom runner function:
+You can also specify a custom runner function and assign custom variables in the busted environment
 
 ```java
 @BustedRunner.RunFile
-public static void run(String path, BustedVariables variables) {
+public static void run(String path, LuaFile.Globals globals) {
 	LuaValue globals = JsePlatform.debugGlobals();
 	globals.set("myAPI", new CustomAPI());
-	busted.bind(globals);
+	context.setEnv(globals);
 	LoadState.load(BustedRunner.class.getResourceAsStream(file), file, globals).invoke();
+}
+
+@BustedRunner.SetupBusted
+public static void setupBusted(Busted busted) {
+	// Alias ignore with pending
+	busted.register("ignore", "pending");
 }
 ```
