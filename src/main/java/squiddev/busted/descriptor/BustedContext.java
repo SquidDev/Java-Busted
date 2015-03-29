@@ -1,13 +1,17 @@
-package squiddev.busted;
+package squiddev.busted.descriptor;
 
 import org.luaj.vm2.LuaError;
 import org.luaj.vm2.LuaTable;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.lib.ThreeArgFunction;
 import org.luaj.vm2.lib.ZeroArgFunction;
+import squiddev.busted.BustedRunner;
+import squiddev.busted.ITestItem;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * Injects variables into a scope
@@ -40,12 +44,27 @@ public class BustedContext {
 		Expose,
 	}
 
+	/**
+	 * The runner for this BustedContext
+	 */
 	public final BustedRunner runner;
-	public final BustedContext parent;
-	public final EnvironmentType type;
-	public final int depth;
 
-	protected final List<ITestItem> tests = new ArrayList<>();
+	/**
+	 * The parent context
+	 */
+	public final BustedContext parent;
+
+	/**
+	 * The current environment type
+	 */
+	public final EnvironmentType type;
+
+	/**
+	 * Additional items to run
+	 */
+	public final Map<String, IBustedExecutor> descriptors = new HashMap<>();
+
+	public final List<ITestItem> tests = new ArrayList<>();
 
 	private LuaValue env;
 
@@ -53,14 +72,12 @@ public class BustedContext {
 		this.runner = parent.runner;
 		this.parent = parent;
 		this.type = type;
-		depth = parent.depth + 1;
 	}
 
 	public BustedContext(BustedRunner runner) {
 		this.runner = runner;
 		this.parent = this;
 		this.type = EnvironmentType.Parent;
-		depth = 0;
 	}
 
 	/**
@@ -154,5 +171,35 @@ public class BustedContext {
 		for (String descriptor : runner.busted.executors.keySet()) {
 			reject(descriptor);
 		}
+	}
+
+	/**
+	 * Execute the parent executor then this executor
+	 *
+	 * @param descriptor The name of the item to run
+	 */
+	public void execute(String descriptor) {
+		parent.execute(descriptor);
+
+		IBustedExecutor item = descriptors.get(descriptor);
+
+		if (item != null) {
+			item.invoke(this);
+		}
+	}
+
+	/**
+	 * Execute this executor then the parent
+	 *
+	 * @param descriptor The name of the item to run
+	 */
+	public void executeReverse(String descriptor) {
+		IBustedExecutor item = descriptors.get(descriptor);
+
+		if (item != null) {
+			item.invoke(this);
+		}
+
+		parent.executeReverse(descriptor);
 	}
 }

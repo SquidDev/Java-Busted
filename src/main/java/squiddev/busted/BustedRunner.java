@@ -5,6 +5,9 @@ import org.junit.runners.model.InitializationError;
 import org.luaj.vm2.LoadState;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.lib.jse.JsePlatform;
+import squiddev.busted.blocks.LuaFile;
+import squiddev.busted.descriptor.Busted;
+import squiddev.busted.descriptor.BustedContext;
 
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
@@ -153,7 +156,7 @@ public class BustedRunner extends TestItemRunner<LuaFile> {
 	 * @param context The busted globals to use
 	 * @throws Exception
 	 */
-	protected static void runFile(String file, LuaFile.Globals context) throws Exception {
+	public static void runFile(String file, LuaFile.Globals context) throws Exception {
 		LuaValue globals = JsePlatform.debugGlobals();
 		context.setEnv(globals);
 		LoadState.load(BustedRunner.class.getResourceAsStream(file), file, globals).invoke();

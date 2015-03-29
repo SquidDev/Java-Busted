@@ -1,20 +1,24 @@
-package squiddev.busted;
+package squiddev.busted.blocks;
 
 import org.junit.runners.model.InitializationError;
 import org.luaj.vm2.LuaValue;
+import squiddev.busted.BustedRunner;
+import squiddev.busted.ITestItem;
+import squiddev.busted.descriptor.BustedContext;
+import squiddev.busted.descriptor.IBustedExecutor;
 
 import java.util.List;
 
 /**
  * A file in the busted suite
  */
-public class LuaFile extends TestItemRunner<ITestItem> implements ITestItem {
+public class LuaFile extends Block implements ITestItem {
 	public final String path;
 	public final BustedRunner runner;
 
 	public LuaFile(String path, BustedRunner runner) throws InitializationError {
 		// TODO: Cache the TestClass instance somehow
-		super(runner.getTestClass().getJavaClass());
+		super(new Globals(runner));
 
 		this.path = path;
 		this.runner = runner;
@@ -25,16 +29,13 @@ public class LuaFile extends TestItemRunner<ITestItem> implements ITestItem {
 	 */
 	@Override
 	protected List<ITestItem> getChildren() {
-		Globals globals = new Globals(runner);
-
 		try {
-			runner.runFile.invoke(null, runner.bustedRoot + path, globals);
+			runner.runFile.invoke(null, runner.bustedRoot + path, context);
 		} catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 
-		return globals.tests;
-
+		return context.tests;
 	}
 
 	/**
@@ -73,6 +74,30 @@ public class LuaFile extends TestItemRunner<ITestItem> implements ITestItem {
 			this.environment = environment;
 
 			runner.busted.bind(this);
+		}
+
+		/**
+		 * Execute the parent executor then this executor
+		 *
+		 * @param descriptor The name of the item to run
+		 */
+		@Override
+		public void execute(String descriptor) {
+			IBustedExecutor item = descriptors.get(descriptor);
+
+			if (item != null) {
+				item.invoke(this);
+			}
+		}
+
+		/**
+		 * Execute this executor then the parent
+		 *
+		 * @param descriptor The name of the item to run
+		 */
+		@Override
+		public void executeReverse(String descriptor) {
+			execute(descriptor);
 		}
 	}
 }

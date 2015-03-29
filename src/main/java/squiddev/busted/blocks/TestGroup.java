@@ -1,17 +1,18 @@
-package squiddev.busted;
+package squiddev.busted.blocks;
 
 import org.junit.runners.model.InitializationError;
 import org.luaj.vm2.LuaValue;
+import squiddev.busted.ITestItem;
+import squiddev.busted.descriptor.BustedContext;
 
 import java.util.List;
 
 /**
  * Create a test suite
  */
-public class TestGroup extends TestItemRunner<ITestItem> implements ITestItem {
+public class TestGroup extends Block implements ITestItem {
 	private final String name;
 	private final LuaValue closure;
-	private final BustedContext context;
 
 	/**
 	 * Create a new TestGroup
@@ -21,13 +22,12 @@ public class TestGroup extends TestItemRunner<ITestItem> implements ITestItem {
 	 * @param context The current context
 	 * @throws InitializationError
 	 */
-	protected TestGroup(String name, LuaValue closure, BustedContext context) throws InitializationError {
+	public TestGroup(String name, LuaValue closure, BustedContext context) throws InitializationError {
 		// TODO: Cache the TestClass instance somehow
-		super(context.runner.getTestClass().getJavaClass());
+		super(context);
 
 		this.name = name;
 		this.closure = closure;
-		this.context = context;
 
 		context.setup();
 		closure.setfenv(context.getEnv());
