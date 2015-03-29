@@ -168,7 +168,7 @@ public class BustedContext {
 	 * Disable all busted functions
 	 */
 	public void rejectAll() {
-		for (String descriptor : runner.busted.executors.keySet()) {
+		for (String descriptor : runner.busted.executors.items.keySet()) {
 			reject(descriptor);
 		}
 	}

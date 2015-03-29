@@ -3,8 +3,8 @@ package squiddev.busted.descriptor;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
 import org.luaj.vm2.lib.VarArgFunction;
+import squiddev.busted.Registry;
 
-import java.util.HashMap;
 import java.util.Map;
 
 import static squiddev.busted.descriptor.DefaultDescriptors.*;
@@ -13,8 +13,8 @@ import static squiddev.busted.descriptor.DefaultDescriptors.*;
  * Handles registration of busted globals
  */
 public class Busted {
-	public final Map<String, IBustedDescriptor> executors = new HashMap<>();
-	public final Map<String, LuaValue> globals = new HashMap<>();
+	public final Registry<IBustedDescriptor> executors = new Registry<>();
+	public final Registry<LuaValue> globals = new Registry<>();
 
 	public Busted() {
 		register("define", new DefineFunction());
@@ -48,11 +48,11 @@ public class Busted {
 	public void bind(BustedContext context) {
 		LuaValue environment = context.getEnv();
 
-		for (Map.Entry<String, IBustedDescriptor> executor : executors.entrySet()) {
+		for (Map.Entry<String, IBustedDescriptor> executor : executors) {
 			environment.rawset(executor.getKey(), new Executor(executor.getValue(), context));
 		}
 
-		for (Map.Entry<String, LuaValue> global : globals.entrySet()) {
+		for (Map.Entry<String, LuaValue> global : globals) {
 			environment.rawset(global.getKey(), global.getValue());
 		}
 	}
@@ -64,8 +64,7 @@ public class Busted {
 	 * @param executor The executor to run on this function being called
 	 */
 	public void register(String name, IBustedDescriptor executor) {
-		if (executors.containsKey(name)) throw new IllegalArgumentException("Cannot override " + name);
-		executors.put(name, executor);
+		executors.register(name, executor);
 	}
 
 	/**
@@ -75,7 +74,7 @@ public class Busted {
 	 * @param original The original name of the function
 	 */
 	public void register(String name, String original) {
-		executors.put(name, executors.get(original));
+		executors.register(name, original);
 	}
 
 	/**
@@ -94,8 +93,7 @@ public class Busted {
 	 * @param value The LuaValue to use
 	 */
 	public void export(String name, LuaValue value) {
-		if (globals.containsKey(name)) throw new IllegalArgumentException("Cannot override " + name);
-		globals.put(name, value);
+		globals.register(name, value);
 	}
 
 	/**
