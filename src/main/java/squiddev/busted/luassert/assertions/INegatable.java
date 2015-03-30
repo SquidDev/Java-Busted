@@ -1,4 +1,4 @@
-package squiddev.busted.luassert.matchers;
+package squiddev.busted.luassert.assertions;
 
 import org.hamcrest.Matcher;
 

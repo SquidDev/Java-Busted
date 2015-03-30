@@ -2,7 +2,7 @@ it("Basic test", function()
     print("HELLO")
 end)
 
-define("Another group", function()
+describe("Another group", function()
 	it("Child test", function()
         print("Hai!")
     end)

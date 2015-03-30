@@ -1,8 +1,7 @@
-package squiddev.busted.luassert.matchers;
+package squiddev.busted.luassert.assertions;
 
 import org.hamcrest.Description;
 import org.hamcrest.Factory;
-import org.hamcrest.Matcher;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
 import org.luaj.vm2.lib.BaseLib;
@@ -16,48 +15,58 @@ import java.util.Map;
  */
 public class Matchers {
 	@Factory
-	public static Matcher<LuaValue> truthy() {
+	public static INegatable<LuaValue> isTruthy() {
 		return new IsTruthy();
 	}
 
 	@Factory
-	public static Matcher<LuaValue> falsy() {
+	public static INegatable<LuaValue> isFalsy() {
 		return new IsFalsy();
 	}
 
 	@Factory
-	public static Matcher<LuaValue> unique(boolean deep) {
+	public static INegatable<LuaValue> isUnique(boolean deep) {
 		return new IsUnique(deep);
 	}
 
 	@Factory
-	public static Matcher<LuaValue> unique() {
-		return unique(true);
+	public static INegatable<LuaValue> isUnique() {
+		return isUnique(true);
 	}
 
 	@Factory
-	public static Matcher<LuaValue> isTrue() {
-		return new IsEqual(LuaValue.TRUE);
-	}
-
-	@Factory
-	public static Matcher<LuaValue> isFalse() {
-		return new IsEqual(LuaValue.FALSE);
-	}
-
-	@Factory
-	public static Matcher<LuaValue> isType(String type) {
+	public static INegatable<LuaValue> isType(String type) {
 		return new IsType(type);
 	}
 
 	@Factory
-	public static Matcher<LuaValue> hasErrors(String message) {
+	public static INegatable<LuaValue> isTrue() {
+		return new IsEqual(LuaValue.TRUE);
+	}
+
+	@Factory
+	public static INegatable<LuaValue> isFalse() {
+		return new IsEqual(LuaValue.FALSE);
+	}
+
+	@Factory
+	public static INegatable<LuaValue> isEqual(LuaValue expected) {
+		return new IsEqual(expected);
+	}
+
+	@Factory
+	public static INegatable<LuaValue> isSame(LuaValue expected) {
+		return new IsSame(expected);
+	}
+
+	@Factory
+	public static INegatable<LuaValue> hasErrors(String message) {
 		return new HasErrors(message);
 	}
 
 	@Factory
-	public static Matcher<LuaValue> hasErrors() {
-		return hasErrors(null);
+	public static INegatable<LuaValue> isCallable() {
+		return new IsCallable();
 	}
 
 	public static class IsTruthy extends Negatable.BasicNegatable<LuaValue> {
@@ -68,12 +77,12 @@ public class Matchers {
 
 		@Override
 		public String getPositive() {
-			return "is not truthy";
+			return "truthy";
 		}
 
 		@Override
 		public String getNegative() {
-			return "is truthy";
+			return "not truthy";
 		}
 	}
 
@@ -85,12 +94,12 @@ public class Matchers {
 
 		@Override
 		public String getPositive() {
-			return "is not falsey";
+			return "falsey";
 		}
 
 		@Override
 		public String getNegative() {
-			return "is falsy";
+			return "not falsy";
 		}
 	}
 
@@ -141,12 +150,12 @@ public class Matchers {
 
 		@Override
 		public String getPositive() {
-			return "is not type" + type;
+			return "type" + type;
 		}
 
 		@Override
 		public String getNegative() {
-			return "is type" + type;
+			return "type" + type;
 		}
 
 		@Override
@@ -155,6 +164,9 @@ public class Matchers {
 		}
 	}
 
+	/**
+	 * Checks if the items are the same using equality (==)
+	 */
 	public static class IsEqual extends Negatable<LuaValue> {
 		private final LuaValue expected;
 
@@ -174,10 +186,13 @@ public class Matchers {
 
 		@Override
 		public void addNegative(Description description) {
-			description.appendText("not").appendValue(expected);
+			description.appendText("not ").appendValue(expected);
 		}
 	}
 
+	/**
+	 * Checks if the items are the same using a deep compare
+	 */
 	public static class IsSame extends Negatable<LuaValue> {
 		private final LuaValue expected;
 
@@ -218,11 +233,8 @@ public class Matchers {
 				return !ok;
 			}
 
-			if (message.contains(message)) {
-				return true;
-			}
+			return message.contains(message);
 
-			return false;
 		}
 
 		@Override
@@ -235,6 +247,23 @@ public class Matchers {
 		public void addNegative(Description description) {
 			description.appendText("no error");
 			description.appendValue(expected);
+		}
+	}
+
+	public static class IsCallable extends Negatable.BasicNegatable<LuaValue> {
+		@Override
+		public String getPositive() {
+			return "callable";
+		}
+
+		@Override
+		public String getNegative() {
+			return "not callable";
+		}
+
+		@Override
+		protected boolean matchesSafely(LuaValue item) {
+			return Util.callable(item);
 		}
 	}
 }

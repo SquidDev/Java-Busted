@@ -4,6 +4,7 @@ import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
 import org.luaj.vm2.lib.VarArgFunction;
 import squiddev.busted.Registry;
+import squiddev.busted.luassert.Luassert;
 
 import java.util.Map;
 
@@ -17,9 +18,9 @@ public class Busted {
 	public final Registry<LuaValue> globals = new Registry<>();
 
 	public Busted() {
-		register("define", new DefineFunction());
-		register("isolate", new DefineFunction(BustedContext.EnvironmentType.Isolate));
-		register("expose", new DefineFunction(BustedContext.EnvironmentType.Expose));
+		register("describe", new DescribeFunction());
+		register("isolate", new DescribeFunction(BustedContext.EnvironmentType.Isolate));
+		register("expose", new DescribeFunction(BustedContext.EnvironmentType.Expose));
 
 		register("it", new ItFunction());
 		register("pending", new PendingFunction());
@@ -38,6 +39,9 @@ public class Busted {
 
 		register("setup", "strict_setup");
 		register("teardown", "strict_teardown");
+
+		Luassert luassert = new Luassert();
+		export("assert", luassert.table);
 	}
 
 	/**

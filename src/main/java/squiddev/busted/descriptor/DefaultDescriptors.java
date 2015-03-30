@@ -92,14 +92,14 @@ public class DefaultDescriptors {
 		}
 	}
 
-	public static class DefineFunction extends NamedExecutor {
+	public static class DescribeFunction extends NamedExecutor {
 		public final BustedContext.EnvironmentType environment;
 
-		public DefineFunction(BustedContext.EnvironmentType type) {
+		public DescribeFunction(BustedContext.EnvironmentType type) {
 			environment = type;
 		}
 
-		public DefineFunction() {
+		public DescribeFunction() {
 			this(BustedContext.EnvironmentType.Unwrap);
 		}
 

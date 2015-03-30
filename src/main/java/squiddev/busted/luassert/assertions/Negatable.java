@@ -1,4 +1,4 @@
-package squiddev.busted.luassert.matchers;
+package squiddev.busted.luassert.assertions;
 
 import org.hamcrest.BaseMatcher;
 import org.hamcrest.Description;
@@ -29,7 +29,7 @@ public abstract class Negatable<T> extends TypeSafeMatcher<T> implements INegata
 	 * @return The negated test
 	 */
 	public INegatable<T> negate() {
-		return new Negater<T>(this);
+		return new Negater<>(this);
 	}
 
 	/**
