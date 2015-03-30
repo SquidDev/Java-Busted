@@ -64,7 +64,7 @@ public abstract class Negatable<T> extends TypeSafeMatcher<T> implements INegata
 	public static abstract class BasicNegatable<T> extends Negatable<T> {
 		@Override
 		public void addPositive(Description description) {
-			description.appendText(getNegative());
+			description.appendText(getPositive());
 		}
 
 		@Override

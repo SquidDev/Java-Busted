@@ -94,7 +94,7 @@ public class Luassert {
 			final Map<String, IModifier> modifiers = assertData.modifiers.items;
 
 			IAssertion assertion = null;
-			for (int i = tokens.size(); i >= 1; i--) {
+			for (int i = tokens.size() - 1; i >= 0; i--) {
 				String token = tokens.get(i);
 
 				if (key != null) token = key + "_" + token;
@@ -116,16 +116,20 @@ public class Luassert {
 			}
 
 			if (assertion != null) {
-				assertion.match(args, new IModifier() {
-					@Override
-					public Matcher<LuaValue> modify(Matcher<LuaValue> matcher) {
-						for (IModifier mod : mods) {
-							matcher = mod.modify(matcher);
-						}
+				try {
+					assertion.match(args, new IModifier() {
+						@Override
+						public Matcher<LuaValue> modify(Matcher<LuaValue> matcher) {
+							for (IModifier mod : mods) {
+								matcher = mod.modify(matcher);
+							}
 
-						return matcher;
-					}
-				});
+							return matcher;
+						}
+					});
+				} catch (Throwable e) {
+					throw new LuaError(e);
+				}
 			}
 		}
 

@@ -3,12 +3,13 @@ package squiddev.busted.descriptor;
 import org.junit.runners.model.InitializationError;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
+import org.luaj.vm2.lib.OneArgFunction;
 import squiddev.busted.blocks.TestGroup;
 import squiddev.busted.tests.IgnoredTest;
 import squiddev.busted.tests.Test;
 
 /**
- * squiddev.busted.descriptor (Java-Busted
+ * All the default descriptors
  */
 public class DefaultDescriptors {
 	/**
@@ -17,8 +18,20 @@ public class DefaultDescriptors {
 	 */
 	public static abstract class NamedExecutor implements IBustedDescriptor {
 		@Override
-		public void invoke(BustedContext context, Varargs args) {
-			invoke(context, args.arg(1).checkjstring(), args.arg(2).checkfunction());
+		public Varargs invoke(final BustedContext context, Varargs args) {
+			final String funcName = args.arg(1).checkjstring();
+			if (args.arg(2).isnil()) {
+				return new OneArgFunction() {
+					@Override
+					public LuaValue call(LuaValue closure) {
+						NamedExecutor.this.invoke(context, funcName, closure.checkfunction());
+						return LuaValue.NONE;
+					}
+				};
+			}
+
+			invoke(context, funcName, args.arg(2).checkfunction());
+			return LuaValue.NONE;
 		}
 
 		public abstract void invoke(BustedContext context, String name, LuaValue closure);
@@ -30,8 +43,9 @@ public class DefaultDescriptors {
 	 */
 	public static abstract class AnonExecutor implements IBustedDescriptor {
 		@Override
-		public void invoke(BustedContext context, Varargs args) {
+		public Varargs invoke(BustedContext context, Varargs args) {
 			invoke(context, args.arg(1).checkfunction());
+			return LuaValue.NONE;
 		}
 
 		public abstract void invoke(BustedContext context, LuaValue closure);
@@ -125,8 +139,18 @@ public class DefaultDescriptors {
 
 	public static class PendingFunction implements IBustedDescriptor {
 		@Override
-		public void invoke(BustedContext parent, Varargs args) {
+		public Varargs invoke(BustedContext parent, Varargs args) {
 			new IgnoredTest(args.arg1().checkjstring(), parent);
+			return LuaValue.NIL;
+		}
+	}
+
+	public static class RandomizeFunction implements IBustedDescriptor {
+
+		@Override
+		public Varargs invoke(BustedContext context, Varargs args) {
+			context.randomize = true;
+			return LuaValue.NONE;
 		}
 	}
 }

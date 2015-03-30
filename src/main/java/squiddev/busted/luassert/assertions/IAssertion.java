@@ -48,9 +48,9 @@ public interface IAssertion {
 	abstract class ListAssertion implements IAssertion {
 		@Override
 		public void match(Varargs args, IModifier modifier) {
-			LuaValue arg1 = args.arg1();
+			Matcher<LuaValue> arg1 = modifier.modify(getMatcher(args.arg1()));
 			for (int i = 2, n = args.narg(); i <= n; i++) {
-				assertThat(arg1, modifier.modify(getMatcher(args.arg(i))));
+				assertThat(args.arg(i), arg1);
 			}
 		}
 

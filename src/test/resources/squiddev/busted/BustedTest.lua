@@ -1,10 +1,10 @@
 it("Basic test", function()
-    print("HELLO")
+    assert.are_not.equals("hello", "world")
 end)
 
 describe("Another group", function()
 	it("Child test", function()
-        print("Hai!")
+        assert.are_not.is_not.has_not.equals("hello", "world")
     end)
 end)
 

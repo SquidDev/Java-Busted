@@ -62,7 +62,7 @@ public class Util {
 		if (value.isfunction()) return true;
 
 		LuaValue meta = value.getmetatable();
-		return !meta.isnil() && meta.get(LuaValue.CALL).isfunction();
+		return meta != null && !meta.isnil() && meta.get(LuaValue.CALL).isfunction();
 
 	}
 

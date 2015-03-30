@@ -66,6 +66,8 @@ public class BustedContext {
 
 	public final List<ITestItem> tests = new ArrayList<>();
 
+	public boolean randomize = false;
+
 	private LuaValue env;
 
 	public BustedContext(BustedContext parent, EnvironmentType type) {

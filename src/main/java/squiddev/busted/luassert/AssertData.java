@@ -70,7 +70,7 @@ public class AssertData {
 			public void match(Varargs args, IModifier modifier) {
 				LuaValue arg = args.arg1();
 				assertThat(arg, isCallable());
-				assertThat(arg, modifier.modify(hasErrors(args.tojstring(2))));
+				assertThat(arg, modifier.modify(hasErrors(args.optjstring(2, null))));
 			}
 		});
 

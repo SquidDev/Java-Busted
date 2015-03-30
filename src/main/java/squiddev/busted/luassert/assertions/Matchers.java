@@ -150,12 +150,12 @@ public class Matchers {
 
 		@Override
 		public String getPositive() {
-			return "type" + type;
+			return "type " + type;
 		}
 
 		@Override
 		public String getNegative() {
-			return "type" + type;
+			return "not type " + type;
 		}
 
 		@Override
@@ -202,12 +202,12 @@ public class Matchers {
 
 		@Override
 		public void addPositive(Description description) {
-			description.appendText("same").appendValue(expected);
+			description.appendText("same ").appendValue(expected);
 		}
 
 		@Override
 		public void addNegative(Description description) {
-			description.appendText("not same").appendValue(expected);
+			description.appendText("not same ").appendValue(expected);
 		}
 
 		@Override
@@ -233,20 +233,19 @@ public class Matchers {
 				return !ok;
 			}
 
-			return message.contains(message);
+			System.out.println("Error: " + message + " " + expected);
+			return message.contains(expected);
 
 		}
 
 		@Override
 		public void addPositive(Description description) {
-			description.appendText("error");
-			description.appendValue(expected);
+			description.appendText("error ").appendValue(expected);
 		}
 
 		@Override
 		public void addNegative(Description description) {
-			description.appendText("no error");
-			description.appendValue(expected);
+			description.appendText("no error ").appendValue(expected);
 		}
 	}
 

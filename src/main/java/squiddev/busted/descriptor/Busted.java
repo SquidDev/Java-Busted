@@ -19,11 +19,13 @@ public class Busted {
 
 	public Busted() {
 		register("describe", new DescribeFunction());
-		register("isolate", new DescribeFunction(BustedContext.EnvironmentType.Isolate));
+		register("insulate", new DescribeFunction(BustedContext.EnvironmentType.Isolate));
 		register("expose", new DescribeFunction(BustedContext.EnvironmentType.Expose));
 
 		register("it", new ItFunction());
 		register("pending", new PendingFunction());
+
+		register("randomize", new RandomizeFunction());
 
 		register("context", "describe");
 		register("spec", "it");
@@ -114,8 +116,7 @@ public class Busted {
 
 		@Override
 		public Varargs invoke(Varargs args) {
-			executor.invoke(context, args);
-			return LuaValue.NONE;
+			return executor.invoke(context, args);
 		}
 	}
 }
