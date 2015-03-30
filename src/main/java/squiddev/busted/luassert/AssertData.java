@@ -1,9 +1,9 @@
 package squiddev.busted.luassert;
 
 import org.hamcrest.Matcher;
+import org.luaj.vm2.LuaError;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
-import org.luaj.vm2.lib.BaseLib;
 import squiddev.busted.Registry;
 import squiddev.busted.luassert.assertions.IAssertion;
 import squiddev.busted.luassert.assertions.INegatable;
@@ -67,9 +67,17 @@ public class AssertData {
 				LuaValue arg = args.arg1();
 				assertThat(arg, isCallable());
 
-				Varargs pcall = BaseLib.pcall(arg, LuaValue.NONE, null);
-				LuaValue message = pcall.arg(2);
-				if(pcall.arg1().toboolean()) message = null;
+				LuaValue message = null;
+
+				try {
+					arg.invoke();
+				} catch (LuaError le) {
+					String m = le.getMessage();
+					message = m != null ? LuaValue.valueOf(m) : LuaValue.NIL;
+				} catch (Throwable e) {
+					String m = e.getMessage();
+					message = LuaValue.valueOf(m != null ? m : e.toString());
+				}
 
 				assertThat(message, modifier.modify(hasErrors(args.optjstring(2, null))));
 			}

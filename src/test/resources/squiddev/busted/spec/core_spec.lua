@@ -9,7 +9,7 @@ assert(type(before_each) == 'function')
 assert(type(after_each) == 'function')
 assert(type(spy) == 'table')
 assert(type(stub) == 'table')
-assert(type(mock) == 'function')
+--assert(type(mock) == 'function')
 assert(type(assert) == 'table')
 
 describe('Before each', function()
@@ -115,7 +115,7 @@ describe('Testing test order', function()
 	local testorder, level = '', 0
 
 	local function report_level(desc)
-		testorder = testorder .. string.rep(' ', level * 2) .. desc .. '\n'
+		testorder = testorder .. string.rep('\t', level) .. desc .. '\n'
 	end
 
 	describe('describe, level A', function()

@@ -45,6 +45,7 @@ public class Busted {
 		Luassert luassert = new Luassert();
 		export("assert", luassert.table);
 		export("spy", luassert.spy.table);
+		export("stub", luassert.stub.table);
 	}
 
 	/**

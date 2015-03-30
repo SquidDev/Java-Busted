@@ -22,6 +22,7 @@ import java.util.Map;
 public class Luassert {
 	public final AssertData assertData = new AssertData();
 	public final Spy spy = new Spy(assertData);
+	public final Stub stub = new Stub(assertData);
 
 	public final LuaTable table;
 

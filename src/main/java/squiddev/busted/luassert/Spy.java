@@ -19,7 +19,7 @@ import static org.junit.Assert.assertThat;
 import static org.junit.Assert.fail;
 
 /**
- * squiddev.busted.luassert (Java-Busted
+ * Spies on functions and tracks calls
  */
 public class Spy {
 	public final LuaTable table;
@@ -84,7 +84,7 @@ public class Spy {
 	/**
 	 * Watches what a function is called with
 	 */
-	public class Watcher {
+	public static class Watcher {
 		public final LuaTable table;
 
 		public final List<LuaValue> calledWith = new ArrayList<>();
@@ -134,9 +134,7 @@ public class Spy {
 			meta.set(LuaValue.CALL, new VarArgFunction() {
 				@Override
 				public Varargs invoke(Varargs args) {
-					args = args.subargs(2);
-					calledWith.add(new LuaTable(args));
-					return callback.invoke(args);
+					return Watcher.this.call(args.subargs(2));
 				}
 			});
 		}
@@ -157,16 +155,21 @@ public class Spy {
 
 			return false;
 		}
+
+		public Varargs call(Varargs args) {
+			calledWith.add(new LuaTable(args));
+			return callback.invoke(args);
+		}
 	}
 
 	/**
 	 * Overrides a table's function
 	 */
-	public class TableWatcher extends Watcher {
+	public static class TableWatcher extends Watcher {
 		public final LuaValue lookup;
 		public final LuaValue key;
 
-		private boolean rolledBack = false;
+		protected boolean rolledBack = false;
 
 		public TableWatcher(LuaValue table, LuaValue key) {
 			super(table.get(key));
