@@ -17,12 +17,14 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * squiddev.busted.luassert (Java-Busted
+ * The main assert library
+ * TODO: Make this not an ugly mess
  */
 public class Luassert {
 	public final AssertData assertData = new AssertData();
 	public final Spy spy = new Spy(assertData);
 	public final Stub stub = new Stub(assertData);
+	public final Mock mock = new Mock(spy, stub);
 
 	public final LuaTable table;
 

@@ -46,6 +46,7 @@ public class Busted {
 		export("assert", luassert.table);
 		export("spy", luassert.spy.table);
 		export("stub", luassert.stub.table);
+		export("mock", luassert.mock);
 	}
 
 	/**

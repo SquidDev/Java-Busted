@@ -13,6 +13,7 @@ public class BustedRunnerTest {
 			"luassert/spec/assertions_spec.lua",
 			"luassert/spec/spies_spec.lua",
 			"luassert/spec/stub_spec.lua",
+			"luassert/spec/mocks_spec.lua",
 		};
 	}
 }
