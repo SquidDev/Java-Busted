@@ -235,12 +235,14 @@ public class Matchers {
 		}
 		@Override
 		public void addPositive(Description description) {
-			description.appendText("error ").appendValue(LuaString.valueOf(expected));
+			description.appendText("error");
+			if(expected != null) description.appendText(" ").appendValue(LuaString.valueOf(expected));
 		}
 
 		@Override
 		public void addNegative(Description description) {
-			description.appendText("no error ").appendValue(LuaString.valueOf(expected));
+			description.appendText("no error");
+			if(expected != null) description.appendText(" ").appendValue(LuaString.valueOf(expected));
 		}
 	}
 

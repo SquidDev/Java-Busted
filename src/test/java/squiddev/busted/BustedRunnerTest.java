@@ -8,6 +8,9 @@ public class BustedRunnerTest {
 	public static String[] sources() {
 		return new String[]{
 			"BustedTest.lua",
+
+			"luassert/spec/assertions_spec.lua",
+			"luassert/spec/spies_spec.lua",
 		};
 	}
 }

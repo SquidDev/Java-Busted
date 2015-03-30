@@ -5,6 +5,7 @@ import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
 import squiddev.busted.luassert.modifiers.IModifier;
 
+import static org.hamcrest.CoreMatchers.is;
 import static org.hamcrest.MatcherAssert.assertThat;
 
 /**
@@ -48,6 +49,9 @@ public interface IAssertion {
 	abstract class ListAssertion implements IAssertion {
 		@Override
 		public void match(Varargs args, Varargs payload, IModifier modifier) {
+			if(args.narg() < 2) {
+				assertThat("Must specify at least 2 arguments", args.narg(), is(2));
+			}
 			Matcher<LuaValue> arg1 = modifier.modify(getMatcher(args.arg1()));
 			for (int i = 2, n = args.narg(); i <= n; i++) {
 				assertThat(args.arg(i), arg1);

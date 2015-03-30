@@ -17,9 +17,7 @@ public class Util {
 	 */
 	public static boolean deepCompare(LuaValue a, LuaValue b, boolean ignoreMeta) {
 		int typeA = a.type();
-		int typeB = a.type();
-
-		if (typeA != typeB) return false;
+		if (typeA != b.type()) return false;
 
 		if (typeA != LuaValue.TTABLE) return a.eq_b(b);
 
@@ -27,7 +25,7 @@ public class Util {
 		LuaValue metaB = b.getmetatable();
 
 		// If equality can be checked with __eq
-		if (metaA.toboolean() && metaA.eq_b(metaB) && metaA.get(LuaValue.EQ).toboolean()) {
+		if (metaA != null && metaA.toboolean() && metaA.eq_b(metaB) && metaA.get(LuaValue.EQ).toboolean()) {
 			// If we should use metatables then use them
 			if (!ignoreMeta) return a.eq_b(b);
 		} else {

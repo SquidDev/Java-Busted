@@ -68,11 +68,10 @@ public class Spy {
 		data.assertions.register("called_with", new IAssertion() {
 			@Override
 			public void match(Varargs args, Varargs payload, IModifier modifier) {
-				LuaValue calledArgs = args.arg1();
 				LuaValue spy = payload.arg1();
 
 				if (isSpy(spy)) {
-					assertThat(spy, modifier.modify(new AssertCalledWith(calledArgs)));
+					assertThat(spy, modifier.modify(new AssertCalledWith(new LuaTable(args))));
 				} else if (Util.callable(spy)) {
 					fail("When calling 'spy(aspy)', 'aspy' must not be the original function, but the spy function replacing the original");
 				} else {
@@ -86,7 +85,7 @@ public class Spy {
 	 * Watches what a function is called with
 	 */
 	public class Watcher {
-		private final LuaTable table;
+		public final LuaTable table;
 
 		public final List<LuaValue> calledWith = new ArrayList<>();
 		public final LuaValue callback;
@@ -135,6 +134,7 @@ public class Spy {
 			meta.set(LuaValue.CALL, new VarArgFunction() {
 				@Override
 				public Varargs invoke(Varargs args) {
+					args = args.subargs(2);
 					calledWith.add(new LuaTable(args));
 					return callback.invoke(args);
 				}
@@ -163,7 +163,7 @@ public class Spy {
 	 * Overrides a table's function
 	 */
 	public class TableWatcher extends Watcher {
-		public final LuaValue table;
+		public final LuaValue lookup;
 		public final LuaValue key;
 
 		private boolean rolledBack = false;
@@ -171,7 +171,9 @@ public class Spy {
 		public TableWatcher(LuaValue table, LuaValue key) {
 			super(table.get(key));
 
-			this.table = table;
+			table.set(key, this.table);
+
+			this.lookup = table;
 			this.key = key;
 		}
 
@@ -182,7 +184,7 @@ public class Spy {
 		public LuaValue rollback() {
 			if (!rolledBack) {
 				rolledBack = true;
-				table.set(key, callback);
+				lookup.set(key, callback);
 			}
 
 			return super.rollback();
@@ -212,7 +214,7 @@ public class Spy {
 
 		@Override
 		protected boolean matchesSafely(LuaValue spy) {
-			return spy.get("called").invoke(called).toboolean(1);
+			return spy.method("called", called).toboolean(1);
 		}
 	}
 
@@ -225,17 +227,17 @@ public class Spy {
 
 		@Override
 		public void addPositive(Description description) {
-			description.appendText("called with ").appendValue(args);
+			description.appendText("called with ").appendValue(new ValueWrapper(args));
 		}
 
 		@Override
 		public void addNegative(Description description) {
-			description.appendText("not called with ").appendValue(args);
+			description.appendText("not called with ").appendValue(new ValueWrapper(args));
 		}
 
 		@Override
 		protected boolean matchesSafely(LuaValue spy) {
-			return spy.get("called_with").invoke(args).toboolean(1);
+			return spy.method("called_with", args).toboolean(1);
 		}
 	}
 }

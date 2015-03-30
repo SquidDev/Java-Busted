@@ -12,11 +12,19 @@ pending("Pending test", function()
 	error("This should not be called")
 end)
 
+it("Spy", function()
+	a = spy.new(function() end)
+
+	a(1, 2, 3)
+	assert.spy(a).was_not.called_with(1)
+	assert.spy(a).was.called_with(1, 2, 3)
+end)
+
 local called = 0
 before_each(function()
 	called = called + 1
 end)
 
 teardown(function()
-	assert.equals(2, called)
+	assert.equals(3, called)
 end)

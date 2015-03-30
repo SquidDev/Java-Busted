@@ -52,7 +52,14 @@ public class Luassert {
 				if (!args.arg(2).toboolean()) {
 					throw new LuaError(new AssertionError(args.optjstring(3, "assertion failed!")).fillInStackTrace());
 				}
-				return args.subargs(2);
+
+				// TODO: Returning subargs seems to break things (only last value is copied)
+				int narg = args.narg() - 1;
+				LuaValue[] varargs = new LuaValue[narg];
+				for (int i = 0; i < narg; i++) {
+					varargs[i] = args.arg(i + 2);
+				}
+				return LuaValue.varargsOf(varargs);
 			}
 		});
 	}
@@ -106,7 +113,7 @@ public class Luassert {
 			for (int i = tokens.size() - 1; i >= 0; i--) {
 				String token = tokens.get(i);
 
-				if (key != null) token = key + "_" + token;
+				if (key != null) token = token + "_" + key;
 
 				IAssertion newAssertion = assertions.get(token);
 				if (newAssertion != null) {
@@ -145,7 +152,7 @@ public class Luassert {
 		}
 
 		public void index(String key) {
-			Collections.addAll(tokens, key.split("_"));
+			Collections.addAll(tokens, key.toLowerCase().split("_"));
 		}
 	}
 }
