@@ -7,6 +7,9 @@ import squiddev.busted.ITestItem;
 import squiddev.busted.TestItemRunner;
 import squiddev.busted.descriptor.BustedContext;
 
+import java.util.Collections;
+import java.util.List;
+
 /**
  * Super class for all items that call items
  */
@@ -57,5 +60,16 @@ public abstract class Block extends TestItemRunner<ITestItem> {
 				context.executeReverse("lazy_teardown", false);
 			}
 		});
+	}
+
+	/**
+	 * Returns a list of objects that define the children of this Runner.
+	 */
+	@Override
+	protected List<ITestItem> getChildren() {
+		List<ITestItem> children = super.getChildren();
+		if (context.randomize) Collections.shuffle(children);
+
+		return children;
 	}
 }
