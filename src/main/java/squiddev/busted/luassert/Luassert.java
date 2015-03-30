@@ -21,6 +21,7 @@ import java.util.Map;
  */
 public class Luassert {
 	public final AssertData assertData = new AssertData();
+	public final Spy spy = new Spy(assertData);
 
 	public final LuaTable table;
 
@@ -59,7 +60,15 @@ public class Luassert {
 	public class AssertChain {
 		private final List<String> tokens = new ArrayList<>();
 
+		/**
+		 * The API table
+		 */
 		public final LuaTable table;
+
+		/**
+		 * Arguments from a previous file
+		 */
+		public Varargs payload;
 
 		public AssertChain() {
 			LuaTable table = this.table = new LuaTable();
@@ -117,7 +126,7 @@ public class Luassert {
 
 			if (assertion != null) {
 				try {
-					assertion.match(args, new IModifier() {
+					assertion.match(args, payload, new IModifier() {
 						@Override
 						public Matcher<LuaValue> modify(Matcher<LuaValue> matcher) {
 							for (IModifier mod : mods) {
@@ -130,6 +139,8 @@ public class Luassert {
 				} catch (Throwable e) {
 					throw new LuaError(e);
 				}
+			} else {
+				payload = args;
 			}
 		}
 

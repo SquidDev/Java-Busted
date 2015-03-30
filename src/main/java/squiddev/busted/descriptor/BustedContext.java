@@ -209,10 +209,12 @@ public class BustedContext {
 	protected void execute(String descriptor) {
 		IBustedExecutor item = descriptors.get(descriptor);
 
+		// Provide feedback on this item
+		if (descriptorSuccess.get(descriptor) == null) descriptorSuccess.put(descriptor, true);
+
 		if (item != null) {
 			try {
 				item.invoke(this);
-				descriptorSuccess.put(descriptor, true);
 			} catch(Exception e) {
 				descriptorSuccess.put(descriptor, false);
 				throw new RuntimeException(e);

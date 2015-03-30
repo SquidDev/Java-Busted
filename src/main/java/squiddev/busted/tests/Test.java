@@ -9,6 +9,8 @@ import org.luaj.vm2.lib.OneArgFunction;
 import squiddev.busted.ITestItem;
 import squiddev.busted.descriptor.BustedContext;
 
+import java.util.UUID;
+
 /**
  * A single busted test
  */
@@ -30,13 +32,13 @@ public class Test implements ITestItem {
 	public Test(String name, LuaValue closure, BustedContext context) {
 		this.name = name;
 		this.closure = closure;
-		this.description = Description.createTestDescription(context.runner.getTestClass().getJavaClass(), name);
+		this.description = Description.createTestDescription(context.runner.getTestClass().getName(), name, UUID.randomUUID());
 		this.context = context;
 
 		context.getEnv().rawset("finally", new OneArgFunction() {
 			@Override
 			public LuaValue call(LuaValue arg) {
-				atEnd = arg.checkfunction();
+				atEnd = arg;
 				return LuaValue.NONE;
 			}
 		});

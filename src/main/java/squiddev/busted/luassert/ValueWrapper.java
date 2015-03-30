@@ -80,6 +80,31 @@ public class ValueWrapper extends AbstractMap<LuaValue, LuaValue> implements Ite
 		return new EntryIterator();
 	}
 
+	@Override
+	public String toString() {
+		if (value.type() == LuaValue.TTABLE) {
+			StringBuilder builder = new StringBuilder();
+
+			int previous = 0;
+			for (Entry<LuaValue, LuaValue> item : this) {
+				if (item.getKey().isnumber() && item.getKey().toint() == previous + 1) {
+					previous++;
+					builder.append(item.getValue());
+				} else {
+					builder.append("[").append(item.getKey()).append("] = ").append(item.getValue());
+				}
+
+				builder.append(", ");
+			}
+
+			if (builder.length() > 0) return builder.substring(0, builder.length() - 2);
+			return builder.toString();
+
+		} else {
+			return value.toString();
+		}
+	}
+
 	private class EntrySet extends AbstractSet<Entry<LuaValue, LuaValue>> {
 		public Iterator<Entry<LuaValue, LuaValue>> iterator() {
 			return ValueWrapper.this.iterator();

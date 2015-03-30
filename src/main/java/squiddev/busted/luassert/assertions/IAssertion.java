@@ -11,14 +11,14 @@ import static org.hamcrest.MatcherAssert.assertThat;
  * Assert an item is true
  */
 public interface IAssertion {
-	void match(Varargs args, IModifier modifier);
+	void match(Varargs args, Varargs payload, IModifier modifier);
 
 	/**
 	 * The first argument is the expected one, the following ones are valid arguments
 	 */
 	abstract class BaseAssertion implements IAssertion {
 		@Override
-		public void match(Varargs args, IModifier modifier) {
+		public void match(Varargs args, Varargs payload, IModifier modifier) {
 			assertThat(args.arg1(), modifier.modify(getMatcher(args.subargs(2))));
 		}
 
@@ -47,7 +47,7 @@ public interface IAssertion {
 	 */
 	abstract class ListAssertion implements IAssertion {
 		@Override
-		public void match(Varargs args, IModifier modifier) {
+		public void match(Varargs args, Varargs payload, IModifier modifier) {
 			Matcher<LuaValue> arg1 = modifier.modify(getMatcher(args.arg1()));
 			for (int i = 2, n = args.narg(); i <= n; i++) {
 				assertThat(args.arg(i), arg1);

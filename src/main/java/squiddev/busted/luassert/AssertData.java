@@ -18,12 +18,7 @@ public class AssertData {
 	public final Registry<IAssertion> assertions = new Registry<>();
 
 	public AssertData() {
-		modifiers.register(new String[]{"is", "are", "was", "has"}, new IModifier() {
-			@Override
-			public Matcher<LuaValue> modify(Matcher<LuaValue> matcher) {
-				return matcher;
-			}
-		});
+		modifiers.register(new String[]{"is", "are", "was", "has"}, IModifier.EMPTY);
 
 		modifiers.register(new String[]{"no", "not"}, new IModifier() {
 			@Override
@@ -68,7 +63,7 @@ public class AssertData {
 
 		assertions.register(new String[]{"error", "errors"}, new IAssertion() {
 			@Override
-			public void match(Varargs args, IModifier modifier) {
+			public void match(Varargs args, Varargs payload, IModifier modifier) {
 				LuaValue arg = args.arg1();
 				assertThat(arg, isCallable());
 
