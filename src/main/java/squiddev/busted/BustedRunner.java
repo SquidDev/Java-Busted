@@ -137,14 +137,10 @@ public class BustedRunner extends TestItemRunner<LuaFile> {
 	}
 
 	@Override
-	protected List<LuaFile> getChildren() {
+	protected List<LuaFile> getInternalChildren() throws Exception {
 		List<LuaFile> children = new ArrayList<>();
 		for (String source : bustedSources) {
-			try {
-				children.add(new LuaFile(source, this));
-			} catch (Exception e) {
-				throw new RuntimeException(e);
-			}
+			children.add(new LuaFile(source, this));
 		}
 		return children;
 	}

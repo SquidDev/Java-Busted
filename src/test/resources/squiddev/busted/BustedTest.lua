@@ -18,5 +18,5 @@ before_each(function()
 end)
 
 teardown(function()
-	print("Called " .. called)
+	assert.equals(2, called)
 end)

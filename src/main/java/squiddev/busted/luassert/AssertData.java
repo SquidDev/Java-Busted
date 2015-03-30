@@ -3,6 +3,7 @@ package squiddev.busted.luassert;
 import org.hamcrest.Matcher;
 import org.luaj.vm2.LuaValue;
 import org.luaj.vm2.Varargs;
+import org.luaj.vm2.lib.BaseLib;
 import squiddev.busted.Registry;
 import squiddev.busted.luassert.assertions.IAssertion;
 import squiddev.busted.luassert.assertions.INegatable;
@@ -70,7 +71,12 @@ public class AssertData {
 			public void match(Varargs args, IModifier modifier) {
 				LuaValue arg = args.arg1();
 				assertThat(arg, isCallable());
-				assertThat(arg, modifier.modify(hasErrors(args.optjstring(2, null))));
+
+				Varargs pcall = BaseLib.pcall(arg, LuaValue.NONE, null);
+				LuaValue message = pcall.arg(2);
+				if(pcall.arg1().toboolean()) message = null;
+
+				assertThat(message, modifier.modify(hasErrors(args.optjstring(2, null))));
 			}
 		});
 

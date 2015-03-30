@@ -69,16 +69,15 @@ public class DefaultDescriptors {
 			BustedContext context = new BustedContext(parent, environment);
 
 			context.rejectAll();
-			context.setup();
-			closure.setfenv(context.getEnv());
 
-			parent.descriptors.put(name, getRunnable(closure));
+			parent.descriptors.put(name, getRunnable(context, closure));
 		}
 
-		protected IBustedExecutor getRunnable(final LuaValue closure) {
+		protected IBustedExecutor getRunnable(final BustedContext context, final LuaValue closure) {
 			return new IBustedExecutor() {
 				@Override
-				public void invoke(BustedContext context) {
+				public void invoke(BustedContext executingContext) {
+					closure.setfenv(context.getEnv());
 					closure.invoke();
 				}
 			};
@@ -86,18 +85,33 @@ public class DefaultDescriptors {
 	}
 
 	public static class LazyDescriptor extends Descriptor {
-		public LazyDescriptor(String name) {
+		private final String requirement;
+		public LazyDescriptor(String name, String requirement) {
 			super(name);
+			this.requirement = requirement;
+		}
+
+		public LazyDescriptor(String name) {
+			this(name, null);
 		}
 
 		@Override
-		protected IBustedExecutor getRunnable(final LuaValue closure) {
+		protected IBustedExecutor getRunnable(final BustedContext context, final LuaValue closure) {
 			return new IBustedExecutor() {
 				private boolean called = false;
 
 				@Override
-				public void invoke(BustedContext context) {
-					if (context.tests.size() > 0 && !called) {
+				public void invoke(BustedContext executingContext) {
+					if (!called) {
+
+						if(requirement != null) {
+							Boolean bool = executingContext.descriptorSuccess.get(requirement);
+							if(bool == null || !bool) return;
+
+							executingContext.descriptorSuccess.remove(requirement);
+						}
+
+						closure.setfenv(context.getEnv());
 						closure.invoke();
 						called = true;
 					}
@@ -114,7 +128,7 @@ public class DefaultDescriptors {
 		}
 
 		public DescribeFunction() {
-			this(BustedContext.EnvironmentType.Unwrap);
+			this(BustedContext.EnvironmentType.Wrap);
 		}
 
 		@Override

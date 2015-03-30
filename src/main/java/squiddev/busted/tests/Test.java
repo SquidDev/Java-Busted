@@ -5,6 +5,7 @@ import org.junit.internal.runners.model.EachTestNotifier;
 import org.junit.runner.Description;
 import org.junit.runner.notification.RunNotifier;
 import org.luaj.vm2.LuaValue;
+import org.luaj.vm2.lib.OneArgFunction;
 import squiddev.busted.ITestItem;
 import squiddev.busted.descriptor.BustedContext;
 
@@ -16,6 +17,8 @@ public class Test implements ITestItem {
 	private final Description description;
 	public final String name;
 	public final BustedContext context;
+
+	private LuaValue atEnd;
 
 	/**
 	 * Create a new busted test
@@ -30,8 +33,13 @@ public class Test implements ITestItem {
 		this.description = Description.createTestDescription(context.runner.getTestClass().getJavaClass(), name);
 		this.context = context;
 
-		context.setup();
-		closure.setfenv(context.getEnv());
+		context.getEnv().rawset("finally", new OneArgFunction() {
+			@Override
+			public LuaValue call(LuaValue arg) {
+				atEnd = arg.checkfunction();
+				return LuaValue.NONE;
+			}
+		});
 
 		context.parent.tests.add(this);
 	}
@@ -57,15 +65,36 @@ public class Test implements ITestItem {
 	public void run(RunNotifier notifier) {
 		EachTestNotifier eachNotifier = new EachTestNotifier(notifier, getDescription());
 		eachNotifier.fireTestStarted();
+
+		// Reset finally section
+		atEnd = null;
+
 		try {
-			context.execute("before_each");
+			// TODO: Put this somewhere more sensible
+			context.execute("lazy_setup", true);
+
+			context.execute("before_each", true);
+
+			closure.setfenv(context.getEnv());
 			closure.invoke();
-			context.executeReverse("after_each");
+
+			context.executeReverse("after_each", true);
 		} catch (AssumptionViolatedException e) {
 			eachNotifier.addFailedAssumption(e);
 		} catch (Throwable e) {
 			eachNotifier.addFailure(e);
 		} finally {
+			if (atEnd != null) {
+				// Call finally if we have one
+				try {
+					atEnd.invoke();
+				} catch (AssumptionViolatedException e) {
+					eachNotifier.addFailedAssumption(e);
+				} catch (Throwable e) {
+					eachNotifier.addFailure(e);
+				}
+			}
+
 			eachNotifier.fireTestFinished();
 		}
 	}

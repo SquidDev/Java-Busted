@@ -49,7 +49,7 @@ public class Luassert {
 			@Override
 			public Varargs invoke(Varargs args) {
 				if (!args.arg(2).toboolean()) {
-					throw new LuaError(args.optjstring(3, "assertion failed!"));
+					throw new LuaError(new AssertionError(args.optjstring(3, "assertion failed!")).fillInStackTrace());
 				}
 				return args.subargs(2);
 			}

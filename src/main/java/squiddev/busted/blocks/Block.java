@@ -30,8 +30,7 @@ public abstract class Block extends TestItemRunner<ITestItem> {
 		return super.withBeforeClasses(new Statement() {
 			@Override
 			public void evaluate() throws Throwable {
-				context.execute("strict_setup");
-				context.execute("lazy_setup");
+				context.execute("strict_setup", false);
 
 				statement.evaluate();
 			}
@@ -54,8 +53,8 @@ public abstract class Block extends TestItemRunner<ITestItem> {
 			public void evaluate() throws Throwable {
 				statement.evaluate();
 
-				context.executeReverse("strict_teardown");
-				context.executeReverse("lazy_teardown");
+				context.executeReverse("strict_teardown", false);
+				context.executeReverse("lazy_teardown", false);
 			}
 		});
 	}

@@ -30,7 +30,6 @@ public class TestGroup extends Block implements ITestItem {
 		this.closure = closure;
 
 		context.setup();
-		closure.setfenv(context.getEnv());
 
 		context.parent.tests.add(this);
 	}
@@ -42,7 +41,8 @@ public class TestGroup extends Block implements ITestItem {
 	 * to enable us to define child tests
 	 */
 	@Override
-	protected List<ITestItem> getChildren() {
+	protected List<ITestItem> getInternalChildren() {
+		closure.setfenv(context.getEnv());
 		closure.invoke();
 		return context.tests;
 	}

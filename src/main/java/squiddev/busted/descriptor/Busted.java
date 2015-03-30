@@ -37,7 +37,7 @@ public class Busted {
 		register("strict_setup");
 		register("strict_teardown");
 		register("lazy_setup", new LazyDescriptor("lazy_setup"));
-		register("lazy_teardown", new LazyDescriptor("lazy_teardown"));
+		register("lazy_teardown", new LazyDescriptor("lazy_teardown", "lazy_setup"));
 
 		register("setup", "strict_setup");
 		register("teardown", "strict_teardown");

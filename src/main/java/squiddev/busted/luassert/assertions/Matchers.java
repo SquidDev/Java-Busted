@@ -2,9 +2,8 @@ package squiddev.busted.luassert.assertions;
 
 import org.hamcrest.Description;
 import org.hamcrest.Factory;
+import org.luaj.vm2.LuaString;
 import org.luaj.vm2.LuaValue;
-import org.luaj.vm2.Varargs;
-import org.luaj.vm2.lib.BaseLib;
 import squiddev.busted.luassert.Util;
 import squiddev.busted.luassert.ValueWrapper;
 
@@ -224,28 +223,24 @@ public class Matchers {
 		}
 
 		@Override
-		protected boolean matchesSafely(LuaValue item) {
-			Varargs pcall = BaseLib.pcall(item, LuaValue.NONE, null);
-			boolean ok = pcall.arg(1).toboolean();
-			String message = pcall.arg(2).toString();
+		protected boolean matchesSafely(LuaValue message) {
+			boolean ok = message == null;
 
 			if (ok || expected == null) {
 				return !ok;
 			}
 
-			System.out.println("Error: " + message + " " + expected);
-			return message.contains(expected);
+			return message.toString().contains(expected);
 
 		}
-
 		@Override
 		public void addPositive(Description description) {
-			description.appendText("error ").appendValue(expected);
+			description.appendText("error ").appendValue(LuaString.valueOf(expected));
 		}
 
 		@Override
 		public void addNegative(Description description) {
-			description.appendText("no error ").appendValue(expected);
+			description.appendText("no error ").appendValue(LuaString.valueOf(expected));
 		}
 	}
 

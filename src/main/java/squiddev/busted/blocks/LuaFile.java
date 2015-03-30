@@ -5,7 +5,6 @@ import org.luaj.vm2.LuaValue;
 import squiddev.busted.BustedRunner;
 import squiddev.busted.ITestItem;
 import squiddev.busted.descriptor.BustedContext;
-import squiddev.busted.descriptor.IBustedExecutor;
 
 import java.util.List;
 
@@ -28,13 +27,8 @@ public class LuaFile extends Block implements ITestItem {
 	 * Returns a list of objects that define the children of this Runner.
 	 */
 	@Override
-	protected List<ITestItem> getChildren() {
-		try {
-			runner.runFile.invoke(null, runner.bustedRoot + path, context);
-		} catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-
+	protected List<ITestItem> getInternalChildren() throws Exception {
+		runner.runFile.invoke(null, runner.bustedRoot + path, context);
 		return context.tests;
 	}
 
@@ -80,23 +74,21 @@ public class LuaFile extends Block implements ITestItem {
 		 * Execute the parent executor then this executor
 		 *
 		 * @param descriptor The name of the item to run
+		 * @param propagate Call the parent context
 		 */
 		@Override
-		public void execute(String descriptor) {
-			IBustedExecutor item = descriptors.get(descriptor);
-
-			if (item != null) {
-				item.invoke(this);
-			}
+		public void execute(String descriptor, boolean propagate) {
+			execute(descriptor);
 		}
 
 		/**
 		 * Execute this executor then the parent
 		 *
 		 * @param descriptor The name of the item to run
+		 * @param propagate Call the parent context
 		 */
 		@Override
-		public void executeReverse(String descriptor) {
+		public void executeReverse(String descriptor, boolean propagate) {
 			execute(descriptor);
 		}
 	}

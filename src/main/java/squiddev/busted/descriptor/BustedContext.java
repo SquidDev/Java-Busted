@@ -66,7 +66,12 @@ public class BustedContext {
 
 	public final List<ITestItem> tests = new ArrayList<>();
 
+	/**
+	 * Randomize the order of the tests
+	 */
 	public boolean randomize = false;
+
+	public final HashMap<String, Boolean> descriptorSuccess = new HashMap<>();
 
 	private LuaValue env;
 
@@ -122,7 +127,7 @@ public class BustedContext {
 				case Wrap: {
 					LuaTable env = new LuaTable();
 					LuaTable metaEnv = new LuaTable();
-					metaEnv.set("__index", parent.getEnv());
+					metaEnv.set(LuaValue.INDEX, parent.getEnv());
 					env.setmetatable(metaEnv);
 					return this.env = env;
 				}
@@ -157,10 +162,10 @@ public class BustedContext {
 	public void reject(final String descriptor) {
 		LuaValue env = getEnv();
 		if (!env.get(descriptor).isnil()) {
-			env.set("descriptor", new ZeroArgFunction() {
+			env.rawset(descriptor, new ZeroArgFunction() {
 				@Override
 				public LuaValue call() {
-					throw new LuaError("'" + descriptor + "' not supported inside current block");
+					throw new LuaError("'" + descriptor + "' not supported inside current context block");
 				}
 			});
 		}
@@ -175,33 +180,43 @@ public class BustedContext {
 		}
 	}
 
-	/**
+	/**execute(descriptor, propagate);
 	 * Execute the parent executor then this executor
 	 *
 	 * @param descriptor The name of the item to run
+	 * @param propagate Call the parent context
 	 */
-	public void execute(String descriptor) {
-		parent.execute(descriptor);
-
-		IBustedExecutor item = descriptors.get(descriptor);
-
-		if (item != null) {
-			item.invoke(this);
-		}
+	public void execute(String descriptor, boolean propagate) {
+		if(propagate) parent.execute(descriptor, true);
+		execute(descriptor);
 	}
 
 	/**
 	 * Execute this executor then the parent
 	 *
 	 * @param descriptor The name of the item to run
+	 * @param propagate Call the parent context
 	 */
-	public void executeReverse(String descriptor) {
+	public void executeReverse(String descriptor, boolean propagate) {
+		execute(descriptor);
+		if(propagate) parent.executeReverse(descriptor, true);
+	}
+
+	/**
+	 * Execute a descriptor
+	 * @param descriptor The name of the descriptor
+	 */
+	protected void execute(String descriptor) {
 		IBustedExecutor item = descriptors.get(descriptor);
 
 		if (item != null) {
-			item.invoke(this);
+			try {
+				item.invoke(this);
+				descriptorSuccess.put(descriptor, true);
+			} catch(Exception e) {
+				descriptorSuccess.put(descriptor, false);
+				throw new RuntimeException(e);
+			}
 		}
-
-		parent.executeReverse(descriptor);
 	}
 }
