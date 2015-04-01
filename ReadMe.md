@@ -1,4 +1,4 @@
-# Java Busted [![Build Status](https://travis-ci.org/SquidDev/Java-Busted.svg?branch=master)](https://travis-ci.org/SquidDev/Java-Busted)
+# Java Busted [![Build Status](https://travis-ci.org/SquidDev/luaj.busted.svg?branch=master)](https://travis-ci.org/SquidDev/luaj.busted)
 
 The [Busted](https://github.com/Olivine-Labs/busted) testing framework for LuaJ and JUnit 4 
 
@@ -9,7 +9,7 @@ Mediator, custom output handlers and language support are not supported.
 ```java
 @RunWith(BustedRunner.class)
 public class Test {
-	@BustedRunner.Sources(root = "/squiddev/busted/")
+	@BustedRunner.Sources(root = "/org/squiddev/luaj/busted/")
 	public static String[] sources() {
 		return new String[]{
 			"BustedTest.lua"

@@ -16,7 +16,6 @@ public class LuaFile extends Block implements ITestItem {
 	public final BustedRunner runner;
 
 	public LuaFile(String path, BustedRunner runner) throws InitializationError {
-		// TODO: Cache the TestClass instance somehow
 		super(new Globals(runner));
 
 		this.path = path;
